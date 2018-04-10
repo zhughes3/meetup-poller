@@ -14,8 +14,8 @@ const ZIP = 43215;
 let events = [];
 
 const server = Hapi.server({
-    port: 3000,
-    host: 'localhost'
+	port: 3000,
+	host: 'localhost'
 });
 
 server.route({
@@ -29,7 +29,7 @@ server.route({
 const start = async () => {
 	await server.start();
 	console.log(`Server running at: ${server.info.uri}`);
-}
+};
 
 process.on('unhandledRejection', (err) => {
     console.log(err);
