@@ -1,0 +1,26 @@
+{
+  "name": "meetup-poller",
+  "version": "1.0.0",
+  "description": "Poll meetups API for meetups to attend in a specified location.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zhughes3/meetup-poller.git"
+  },
+  "keywords": [
+    "node",
+    "meetup-api"
+  ],
+  "author": "Zachary Hughes",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/zhughes3/meetup-poller/issues"
+  },
+  "homepage": "https://github.com/zhughes3/meetup-poller#readme",
+  "dependencies": {
+    "node-fetch": "^2.1.2"
+  }
+}
