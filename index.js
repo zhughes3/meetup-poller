@@ -12,6 +12,7 @@ const MEETUP_API_HOST = 'https://api.meetup.com';
 const TOPIC = 'softwaredev';
 const ZIP = 43215;
 let events = [];
+let state = {};
 
 const server = Hapi.server({
 	port: 3000,
@@ -36,44 +37,35 @@ process.on('unhandledRejection', (err) => {
     process.exit(1);
 });
 
-
-
-const searchGroups = () => {
-	const METHOD = '/2/groups';
-	util.format('%s:%s', 'foo');
-	let url = addKey(util.format('%s%s?topic=%s&zip=%d', MEETUP_API_HOST, METHOD, TOPIC, ZIP));
-	return fetch(url)
-	.then(response => {
-		return response.json();
-	});
+// X-RateLimit-Limit     ::= max number of reqs that can be made in a window of time
+// X-RateLimit-Remaining ::= remaining number of reqs allowed in the current rate limit window
+// X-RateLimit-Reset     ::= number of seconds until the current rate limit window resets
+const updateState = (result) => {
+	let headers = JSON.stringify(result.headers.raw());
+	headers = JSON.parse(headers);
+	state.remaining = headers['x-ratelimit-remaining'][0];
+	state.limit = headers['x-ratelimit-limit'][0];
+	state.reset = headers['x-ratelimit-reset'][0];
+	console.log(state);
 };
 
-const handleGroupResults = (results) => {
-	results.forEach(result => {
-		const id = result.id;
-		const link = result.link;
-		const desc = result.description;
-		const urlname = result.urlname;
-		searchEvents(urlname)
-		.then(json => {
-			//console.log('json=' + json);
-			json.forEach(result => {
-				events.append(result);
+const searchEvents = () => {
+	const METHOD = '/find/upcoming_events';
+	let url = addKey(util.format('%s%s?topic_category=%s', MEETUP_API_HOST, METHOD, TOPIC));
+	return makeThrottledRequest(url)
+	.then((json) => {
+		//events = json.events;
+		json.events.forEach(event => {
+			events.push({
+				name: event.name,
+				link: event.link,
+				time: event.time,
+				visibility: event.visibility,
+				group: event.group.name
 			});
-		}).catch(err => {
-			console.log(util.format('There was an error grabbing events for group with id=%s', id));
 		});
-	});
-};
-
-// /:urlname/events
-const searchEvents = (urlname) => {
-	const METHOD = util.format('/%s/events?', urlname);
-	let url = addKey(util.format('%s%s', MEETUP_API_HOST, METHOD));
-	//console.log('url = ' + url);
-	return fetch(url)
-	.then(response => {
-		return response.json();
+	}).catch((err) => {
+		 console.log('We have an error searching for events: ' + err);
 	});
 };
 
@@ -81,15 +73,25 @@ const addKey = (url) => {
 	return util.format('%s&sign=true&key=%s', url, MEETUP_KEY);
 };
 
-start();
+const makeThrottledRequest = (url) => {
+	if (state.remaining == 0) {
+		setTimeout(() => {
+			return makeRequest(url);
+		}, state.reset * 1000);
+	} else {
+		return makeRequest(url);
+	}
+};
 
-searchGroups()
-.then(json => {
-	console.log(json);
-	let results = json.results;
-	//console.log(util.format('We found %d groups with topic=%s', results.length, TOPIC));
-	const meta = json.meta;
-	handleGroupResults(results);
-}).catch(err => {
-	console.log('We have an error= ' + err);
-});
+const makeRequest = (url) => {
+	return fetch(url)
+	.then((results) => {
+		debugger;
+		updateState(results);
+		return results.json();
+	});
+};
+
+searchEvents();
+
+start();
