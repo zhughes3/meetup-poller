@@ -16,9 +16,9 @@
 	}
 	```
 	- start the app with this shell command
-```sh
-node index.js
-```
+	```sh
+	node index.js
+	```
 
 ## Endpoints
 1. /events
