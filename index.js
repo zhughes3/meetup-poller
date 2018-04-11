@@ -51,7 +51,7 @@ const updateState = (result) => {
 
 const searchEvents = () => {
 	const METHOD = '/find/upcoming_events';
-	let url = addKey(util.format('%s%s?topic_category=%s', MEETUP_API_HOST, METHOD, TOPIC));
+	let url = addKey(util.format('%s%s?topic_category=%s&page=%d', MEETUP_API_HOST, METHOD, TOPIC, 100));
 	return makeThrottledRequest(url)
 	.then((json) => {
 		//events = json.events;
