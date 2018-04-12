@@ -4,13 +4,13 @@
 const fetch = require('node-fetch');
 const Hapi = require('hapi');
 const util = require('util');
+const json_helper = require('./JsonHelper');
 
 // global variables
 const obj = require('./private/creds.json');
 const MEETUP_KEY = obj.key;
 const MEETUP_API_HOST = 'https://api.meetup.com';
 const TOPIC = 'softwaredev';
-const ZIP = 43215;
 let events = [];
 let state = {};
 
@@ -23,7 +23,7 @@ server.route({
 	method: 'GET',
 	path: '/events',
 	handler: (request, h) => {
-		return events;
+		return json_helper.getDataStore();
 	}
 });
 
@@ -49,6 +49,10 @@ const updateState = (result) => {
 	console.log(state);
 };
 
+const addEventToTable = (event) => {
+	let sql = 'INSERT INTO events (id, group, description, eventdate, eventtime) VALUES (?, ?, ?, ?, ?) WHERE NOT EXISTS(SELECT 1 FROM events WHERE id = ?);';
+};
+
 const searchEvents = () => {
 	const METHOD = '/find/upcoming_events';
 	let url = addKey(util.format('%s%s?topic_category=%s&page=%d', MEETUP_API_HOST, METHOD, TOPIC, 100));
@@ -57,13 +61,20 @@ const searchEvents = () => {
 		//events = json.events;
 		json.events.forEach(event => {
 			events.push({
+				id: event.id,
 				name: event.name,
 				link: event.link,
 				time: event.time,
 				visibility: event.visibility,
-				group: event.group.name
+				group: event.group.name,
+				description: event.description,
+				'local-date': event['local_date'],
+				'local-time': event['local_time']
 			});
 		});
+
+		//write events to persistent json file
+		json_helper.write(events);
 	}).catch((err) => {
 		 console.log('We have an error searching for events: ' + err);
 	});
@@ -86,7 +97,6 @@ const makeThrottledRequest = (url) => {
 const makeRequest = (url) => {
 	return fetch(url)
 	.then((results) => {
-		debugger;
 		updateState(results);
 		return results.json();
 	});
