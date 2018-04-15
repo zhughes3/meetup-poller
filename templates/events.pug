@@ -1,0 +1,26 @@
+doctype html
+html(lang="en")
+  head
+    title= pageTitle
+    script(src='https://cdnjs.cloudflare.com/ajax/libs/ag-grid/17.0.0/ag-grid.min.js')
+  body
+    h1 Pug - node template engine
+    #container.col
+      if youAreUsingPug
+        p You are amazing
+      else
+        p Get on it!
+      p.
+        Pug is a terse and simple templating language with a
+        strong focus on performance and powerful features.
+      div#grid(class='ag-theme-balham')
+      ul
+        each evt in events
+          li
+            ul
+              each val, idx in evt
+                li= idx + ': ' + val
+    script(src='events-grid.js')
+    script.
+      setRowData(#{events});
+    

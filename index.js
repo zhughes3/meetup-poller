@@ -4,6 +4,8 @@
 const fetch = require('node-fetch');
 const Hapi = require('hapi');
 const util = require('util');
+const Pug = require('pug');
+const Path = require('path');
 const json_helper = require('./JsonHelper');
 
 // global variables
@@ -14,20 +16,39 @@ const TOPIC = 'softwaredev';
 let events = [];
 let state = {};
 
+// sets public as
 const server = Hapi.server({
 	port: 3000,
-	host: 'localhost'
-});
-
-server.route({
-	method: 'GET',
-	path: '/events',
-	handler: (request, h) => {
-		return json_helper.getDataStore();
+	host: 'localhost',
+	routes: {
+		files: {
+			relativeTo: Path.join(__dirname, 'public')
+		}
 	}
 });
 
 const start = async () => {
+	await server.register(require('vision'));
+	await server.register(require('inert'));
+
+	server.views({
+		engines: {pug: Pug},
+		relativeTo: __dirname,
+		path: './templates/'
+	});
+
+	server.route({
+		method: 'GET',
+		path: '/{param*}',
+		handler: {
+        	directory: {
+            	path: '.'
+        	}
+    	}
+	});
+
+
+
 	await server.start();
 	console.log(`Server running at: ${server.info.uri}`);
 };
@@ -43,14 +64,12 @@ process.on('unhandledRejection', (err) => {
 const updateState = (result) => {
 	let headers = JSON.stringify(result.headers.raw());
 	headers = JSON.parse(headers);
+	console.log('Original Headers = \n');
+	console.log(headers);
 	state.remaining = headers['x-ratelimit-remaining'][0];
 	state.limit = headers['x-ratelimit-limit'][0];
 	state.reset = headers['x-ratelimit-reset'][0];
 	console.log(state);
-};
-
-const addEventToTable = (event) => {
-	let sql = 'INSERT INTO events (id, group, description, eventdate, eventtime) VALUES (?, ?, ?, ?, ?) WHERE NOT EXISTS(SELECT 1 FROM events WHERE id = ?);';
 };
 
 const searchEvents = () => {
@@ -102,6 +121,34 @@ const makeRequest = (url) => {
 	});
 };
 
-searchEvents();
+//searchEvents();
 
 start();
+
+server.route({
+	method: 'GET',
+	path: '/events',
+	handler: (request, h) => {
+		// return h.view('events', {
+		// 	pageTitle: `Events for topic: ${TOPIC}`,
+		// 	events: json_helper.getEvents()
+		// });
+		return {
+			data: json_helper.getEvents()
+		}
+	}
+});
+
+server.route({
+	method: 'GET',
+	path: '/events/{id}',
+	handler: (request, h) => {
+		const id = encodeURIComponent(request.params.id);
+		return h.view('event', {
+			pageTitle: `Event with id: ${id}`,
+			event: json_helper.getEvent(id)
+		});
+	}
+
+});
+

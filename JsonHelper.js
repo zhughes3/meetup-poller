@@ -23,7 +23,27 @@ exports.write = (events) => {
 exports.getDataStore = () => {
 	const file_handle = require(FILE_NAME);
 	return file_handle;
-}
+};
+
+exports.getEvents = () => {
+	const file_handle = require(FILE_NAME);
+	return file_handle.events;
+};
+
+exports.getEvent = (id) => {
+	const file_handle = require(FILE_NAME);
+	const events = file_handle.events;
+	for (let i = 0; i < events.length; i++) {
+		let event = events[i];
+		if (event.id === id) {
+			return event;
+		}
+	}
+
+	return {
+		err: `Event with id ${id} not found.`
+	};
+};
 
 const read = () => {
 	const file_handle = require(FILE_NAME);
