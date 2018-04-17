@@ -12,7 +12,7 @@ const util = require('util');
 const obj = require('./private/creds.json');
 const MEETUP_KEY = obj.key;
 const MEETUP_API_HOST = 'https://api.meetup.com';
-const TOPIC = 'tech';
+const BASE_TOPIC = 'tech';
 const PAGING_AMOUNT = 100;
 let events = [];
 let state = {};
@@ -72,7 +72,7 @@ const updateState = (result) => {
 
 const searchEvents = () => {
 	const METHOD = '/find/upcoming_events';
-	let url = addKey(util.format('%s%s?topic_category=%s&page=%d', MEETUP_API_HOST, METHOD, TOPIC, 100));
+	let url = addKey(util.format('%s%s?topic_category=%s&page=%d', MEETUP_API_HOST, METHOD, BASE_TOPIC, 100));
 	return makeThrottledRequest(url)
 	.then((json) => {
 		//events = json.events;
@@ -128,7 +128,7 @@ server.route({
 	path: '/events',
 	handler: (request, h) => {
 		// return h.view('events', {
-		// 	pageTitle: `Events for topic: ${TOPIC}`,
+		// 	pageTitle: `Events for topic: ${BASE_TOPIC}`,
 		// 	events: json_helper.getEvents()
 		// });
 		return {
@@ -156,7 +156,7 @@ server.route({
 		const topic = encodeURIComponent(request.params.topic);
 		const METHOD = '/find/upcoming_events';
 		let url = addKey(util.format('%s%s?topic_category=%s&page=%d&text=%s', 
-			MEETUP_API_HOST, METHOD, TOPIC, PAGING_AMOUNT, topic));
+			MEETUP_API_HOST, METHOD, BASE_TOPIC, PAGING_AMOUNT, topic));
 		return makeThrottledRequest(url)
 		.then((json) => {
 			return {

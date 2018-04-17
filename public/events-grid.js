@@ -39,18 +39,30 @@ let gridOptions = {
 function setRowData(events) {
 	//events = JSON.parse(events);
 	events.forEach((event) => {
-		rowData.push({
-			id: event.id,
-			name: event.name,
-			group: event.group.name,
-			time: new Date(event.time),
-            "local-date": event.local_date,
-            "local-time": event.local_time,
-            description: event.description,
-            link: event.link
-		});
+        if (!isInGrid(event)) {
+            rowData.push({
+                id: event.id,
+                name: event.name,
+                group: event.group.name,
+                time: new Date(event.time),
+                "local-date": event.local_date,
+                "local-time": event.local_time,
+                description: event.description,
+                link: event.link
+            });
+        }
 	});
 	gridOptions.api.setRowData(rowData);
+};
+
+function isInGrid(event) {
+    let isInGrid = false;
+    rowData.forEach(evt => {
+        if (evt.id === event.id) {
+            isInGrid = true;
+        }
+    });
+    return isInGrid;
 };
 
 document.addEventListener("DOMContentLoaded", () => {
