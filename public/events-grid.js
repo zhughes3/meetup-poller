@@ -1,26 +1,22 @@
 const HOST = 'http://localhost:3000';
 
-let columnDefs = [
-	{headerName: "ID", field: "id",
-		cellRenderer: function(params) {
-			return `<a href="http://localhost:3000/events/${params.value}">${params.value}</a>`;
-  	}},
-	{headerName: "Name", field: "name",
+let columnDefs = [{
+        headerName: "Name",
+        field: "name",
         cellRenderer: function(params) {
             return `<a href="${params.data.link}" target="_blank">${params.value}</a>`;
         }
     },
-	{headerName: "Group", field: "group"},
-	{headerName: "Time", field: "time", filter: 'agDateColumnFilter'},
-    {headerName: "Local Date", field: "local-date"},
-    {headerName: "Local Time", field: "local-time"},
-    {headerName: "Description", field: "description"}
+    { headerName: "Group", field: "group" },
+    { headerName: "Time", field: "time", filter: 'agDateColumnFilter' },
+    { headerName: "Local Date", field: "local-date" },
+    { headerName: "Local Time", field: "local-time" }
 ];
 
 let rowData = [];
 
 let gridOptions = {
-	columnDefs: columnDefs,
+    columnDefs: columnDefs,
     rowData: [],
     domLayout: 'autoHeight',
     enableColResize: true,
@@ -28,17 +24,17 @@ let gridOptions = {
     enableFilter: true,
     paginationAutoPageSize: true,
     pagination: true,
-    onGridReady: function () {
+    onGridReady: function() {
         gridOptions.api.sizeColumnsToFit();
     },
     onRowDataChanged: function() {
-    	gridOptions.api.refreshCells();
+        gridOptions.api.refreshCells();
     }
 };
 
 function setRowData(events) {
-	//events = JSON.parse(events);
-	events.forEach((event) => {
+    //events = JSON.parse(events);
+    events.forEach((event) => {
         if (!isInGrid(event)) {
             rowData.push({
                 id: event.id,
@@ -51,8 +47,8 @@ function setRowData(events) {
                 link: event.link
             });
         }
-	});
-	gridOptions.api.setRowData(rowData);
+    });
+    gridOptions.api.setRowData(rowData);
 };
 
 function isInGrid(event) {
@@ -66,18 +62,18 @@ function isInGrid(event) {
 };
 
 document.addEventListener("DOMContentLoaded", () => {
-	// lookup the container we want the Grid to use
+    // lookup the container we want the Grid to use
     let eGridDiv = document.querySelector('#grid');
 
     // create the grid passing in the div to use together with the columns & data we want to use
     new agGrid.Grid(eGridDiv, gridOptions);
     buildEventsForm();
-   //  fetch(`${HOST}/events`)
-   //  .then(res => {
-   //  	return res.json();
-   //  }).then(json => {
-   //  	setRowData(json.data);
-  	// });
+    //  fetch(`${HOST}/events`)
+    //  .then(res => {
+    //  	return res.json();
+    //  }).then(json => {
+    //  	setRowData(json.data);
+    // });
 });
 
 function buildEventsForm() {
@@ -87,7 +83,7 @@ function buildEventsForm() {
     let formGroup = $('<div class="form-group"></div>');
     let label = $(`<label for="${topicSelectId}">Select topic(s).</label>`);
     let textarea = $(`<textarea class="form-control" id="${topicSelectId}" rows="1" required></textarea>`);
-    
+
     // let select = $(`<select class="form-control" id="${topicSelectId}"></select>`);
 
     // relevantTopics.forEach(topic => {
@@ -108,12 +104,14 @@ function handleEventFormSubmit(event) {
     event.preventDefault();
     let topic = $('#topicSelect')[0].value;
     let url = `${HOST}/topics/${topic}`;
+    //show the grid
+    $('#grid').show();
     fetch(url)
-    .then(resp => {
-        return resp.json();
-    }).then(json => {
-        //set pagetitle with json.PageTitle
-        setRowData(json.events.events);
-    });
+        .then(resp => {
+            return resp.json();
+        }).then(json => {
+            //set pagetitle with json.PageTitle
+            setRowData(json.events.events);
+        });
     //window.location.href = url;
 };
