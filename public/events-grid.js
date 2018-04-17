@@ -8,9 +8,22 @@ let columnDefs = [{
         }
     },
     { headerName: "Group", field: "group" },
-    { headerName: "Time", field: "time", filter: 'agDateColumnFilter' },
-    { headerName: "Local Date", field: "local-date" },
-    { headerName: "Local Time", field: "local-time" }
+    {
+        headerName: "Local Date",
+        field: "local-date",
+        filter: 'agDateColumnFilter',
+        cellRenderer: function(params) {
+            return `${params.value.toLocaleDateString()}`;
+        }
+    },
+    {
+        headerName: "Local Time",
+        field: "local-time",
+        cellRenderer: function(params) {
+            return `${params.value.toLocaleTimeString()}`;
+        }
+    },
+    { headerName: "Day of the Week", field: "dayofweek" }
 ];
 
 let rowData = [];
@@ -36,14 +49,19 @@ function setRowData(events) {
     //events = JSON.parse(events);
     events.forEach((event) => {
         if (!isInGrid(event)) {
+            let eventDateTime = new Date(event.time);
+            //remove time of day to make filtering the date by Equality work
+            let eventDate = new Date(eventDateTime.getFullYear(), eventDateTime.getMonth(), eventDateTime.getDate(), 0, 0, 0, 0);
+            //remove the date from the time value so sorting by local time works properly
+            let eventTime = new Date(0, 0, 0, eventDateTime.getHours(), eventDateTime.getMinutes(), eventDateTime.getSeconds(), 0)
+            let eventDayOfWeek = eventDate.toLocaleDateString("en-US", { weekday: 'long' });
+
             rowData.push({
-                id: event.id,
                 name: event.name,
                 group: event.group.name,
-                time: new Date(event.time),
-                "local-date": event.local_date,
-                "local-time": event.local_time,
-                description: event.description,
+                "local-date": eventDate,
+                "local-time": eventTime,
+                dayofweek: eventDayOfWeek,
                 link: event.link
             });
         }
@@ -81,8 +99,8 @@ function buildEventsForm() {
     let form = $('form#eventForm');
 
     let formGroup = $('<div class="form-group"></div>');
-    let label = $(`<label for="${topicSelectId}">Select topic(s).</label>`);
-    let textarea = $(`<textarea class="form-control" id="${topicSelectId}" rows="1" required></textarea>`);
+    let label = $(`<label for="${topicSelectId}">Search for a topic.</label>`);
+    let inputfield = $(`<input type="text" class="form-control" id="${topicSelectId}" rows="1" placeholder="Type to search..." required></input>`);
 
     // let select = $(`<select class="form-control" id="${topicSelectId}"></select>`);
 
@@ -91,7 +109,7 @@ function buildEventsForm() {
     // });
 
     // formGroup.append(label).append(select);
-    formGroup.append(label).append(textarea);
+    formGroup.append(label).append(inputfield);
     form.append(formGroup);
 
     let submit = $('<button type="submit" class="btn btn-primary">Find Events</button>');
@@ -105,7 +123,7 @@ function handleEventFormSubmit(event) {
     let topic = $('#topicSelect')[0].value;
     let url = `${HOST}/topics/${topic}`;
     //show the grid
-    $('#grid').show();
+    $('#grid').css("visibility", "visible");
     fetch(url)
         .then(resp => {
             return resp.json();

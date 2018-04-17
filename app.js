@@ -78,10 +78,12 @@ const searchEvents = () => {
             //events = json.events;
             json.events.forEach(event => {
                 events.push({
+                    id: event.id,
                     name: event.name,
                     link: event.link,
                     time: event.time,
                     visibility: event.visibility,
+                    description: event.description,
                     group: event.group.name,
                     'local-date': event['local_date'],
                     'local-time': event['local_time']
