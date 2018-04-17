@@ -57,6 +57,7 @@ function setRowData(events) {
             let eventDayOfWeek = eventDate.toLocaleDateString("en-US", { weekday: 'long' });
 
             rowData.push({
+                id: event.id,
                 name: event.name,
                 group: event.group.name,
                 "local-date": eventDate,
