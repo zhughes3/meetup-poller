@@ -12,8 +12,12 @@
 	- configure creds.json to look like this:
 	```json
 	{
-	"key" : "YOUR-KEY-GOES-HERE"
+	    "key" : "YOUR-KEY-GOES-HERE"
 	}
+	```
+	- install node dependencies
+	```sh
+	npm install
 	```
 	- start the app with this shell command
 	```sh

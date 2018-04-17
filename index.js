@@ -3,20 +3,20 @@
 // libraries
 const fetch = require('node-fetch');
 const Hapi = require('hapi');
-const util = require('util');
 const Pug = require('pug');
 const Path = require('path');
 const json_helper = require('./JsonHelper');
+const util = require('util');
 
 // global variables
 const obj = require('./private/creds.json');
 const MEETUP_KEY = obj.key;
 const MEETUP_API_HOST = 'https://api.meetup.com';
-const TOPIC = 'softwaredev';
+const TOPIC = 'tech';
+const PAGING_AMOUNT = 100;
 let events = [];
 let state = {};
 
-// sets public as
 const server = Hapi.server({
 	port: 3000,
 	host: 'localhost',
@@ -46,8 +46,6 @@ const start = async () => {
         	}
     	}
 	});
-
-
 
 	await server.start();
 	console.log(`Server running at: ${server.info.uri}`);
@@ -104,7 +102,7 @@ const addKey = (url) => {
 };
 
 const makeThrottledRequest = (url) => {
-	if (state.remaining == 0) {
+	if (state.remaining === 0) {
 		setTimeout(() => {
 			return makeRequest(url);
 		}, state.reset * 1000);
@@ -121,7 +119,7 @@ const makeRequest = (url) => {
 	});
 };
 
-//searchEvents();
+searchEvents();
 
 start();
 
@@ -135,7 +133,7 @@ server.route({
 		// });
 		return {
 			data: json_helper.getEvents()
-		}
+		};
 	}
 });
 
@@ -149,6 +147,23 @@ server.route({
 			event: json_helper.getEvent(id)
 		});
 	}
+});
 
+server.route({
+	method: 'GET',
+	path: '/topics/{topic}',
+	handler: (request, h) => {
+		const topic = encodeURIComponent(request.params.topic);
+		const METHOD = '/find/upcoming_events';
+		let url = addKey(util.format('%s%s?topic_category=%s&page=%d&text=%s', 
+			MEETUP_API_HOST, METHOD, TOPIC, PAGING_AMOUNT, topic));
+		return makeThrottledRequest(url)
+		.then((json) => {
+			return {
+				pageTitle: `Meetups in the ${topic} category`,
+				events: json
+			};
+		});
+	}
 });
 
