@@ -1,6 +1,7 @@
 const HOST = 'http://localhost:3000';
 
-let columnDefs = [{
+let columnDefs = [
+    {
         headerName: "Name",
         field: "name",
         cellRenderer: function(params) {
@@ -126,11 +127,11 @@ function handleEventFormSubmit(event) {
     //show the grid
     $('#grid').css("visibility", "visible");
     fetch(url)
-        .then(resp => {
-            return resp.json();
-        }).then(json => {
-            //set pagetitle with json.PageTitle
-            setRowData(json.events.events);
-        });
+    .then(resp => {
+        return resp.json();
+    }).then(json => {
+        //set pagetitle with json.PageTitle
+        setRowData(json.events.events);
+    });
     //window.location.href = url;
 };
