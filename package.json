@@ -4,6 +4,7 @@
   "description": "Poll meetups API for meetups to attend in a specified location.",
   "main": "index.js",
   "scripts": {
+    "start": "node app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
